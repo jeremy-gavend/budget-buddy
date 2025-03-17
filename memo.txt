@@ -1,0 +1,46 @@
+Logiciel interface graphique
+Base de données
+
+SQL:
+	Transaction:
+		Reference
+		Description
+		Montant
+		Date
+		Type (Retrait, dépot, transfert)
+
+	Form:
+		Nom
+		Prenom
+		Email
+		Password -> Hash / 1 Mag, 1 Min, 1 symbol, 1 chiffre, 10 characters
+		
+	Account:
+		Balance
+		Creation_date
+		user_id
+
+Python
+	Operations(fonctions):
+		Retrait
+		Depots
+		Transfert (interne)
+		Historique (affichage)
+		
+	Filtre:
+		Date
+		Categorie custom
+		Type
+		Montant (croissant, décroissant)
+		Date (between)
+		
+	Pygame
+		Page 1 - Login
+			Page de connexion
+			Page de register
+
+		Page 2 - Vue d'ensemble + fonctions + sorting
+			Solde
+			Total dépense / mois
+			Alerte découvert
+			Graphiques

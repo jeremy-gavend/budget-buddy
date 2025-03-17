@@ -14,9 +14,9 @@ CREATE TABLE users (
 
 CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
-    balance DECIMAL(10, 2) NOT NULL,
+    balance FLOAT NOT NULL,
     user_id BIGINT UNSIGNED,
-    amount DECIMAL(10, 2) NOT NULL,
+    creation_date DATE NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
@@ -28,5 +28,6 @@ CREATE TABLE transactions (
     description VARCHAR(255) NOT NULL,
     date DATE NOT NULL,
     type VARCHAR(255) NOT NULL,
+    category VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
