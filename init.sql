@@ -12,7 +12,7 @@ CREATE TABLE users (
     phone VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE account (
+CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
     balance DECIMAL(10, 2) NOT NULL,
     user_id BIGINT UNSIGNED,
