@@ -16,7 +16,6 @@ CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
     balance DECIMAL(10, 2) NOT NULL,
     user_id BIGINT UNSIGNED,
-    amount DECIMAL(10, 2) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 

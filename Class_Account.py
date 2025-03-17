@@ -6,3 +6,6 @@ class Accounts:
     def get_balance(self, cursor):
         cursor.execute(f"SELECT balance FROM accounts WHERE user_id = {self.id_user}")
         return cursor.fetchall()[0]
+    
+    def sort_by(self, sorting):
+        
