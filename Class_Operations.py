@@ -2,13 +2,13 @@ from datetime import datetime
 from Class_Accounts import Accounts
 
 class Operations:
-    def withdraw(cursor, mydb, user: Accounts, amount: float, description):
+    def withdraw(cursor, mydb, user: Accounts, amount: float, description, category):
         """Called by the button "withdraw" """
         balance = user.get_balance(cursor)
         current_date = datetime.today()
  
-        cursor.execute(f"UPDATE accounts SET balance = {balance - amount} WHERE user_id = {user.user.id};")
-        cursor.execute(f"INSERT INTO transactions (user_id, amount, description, date, type) VALUES ({user.username}, {amount}, {description}, {current_date}, 'withdraw');")
+        cursor.execute(f"UPDATE accounts SET balance = {balance - amount} WHERE user_id = {user.user_id};")
+        cursor.execute(f"INSERT INTO transactions (user_id, amount, description, date, type, category) VALUES ({user.user_id}, {amount}, '{description}', '{current_date}', 'withdraw', '{category}');")
 
         mydb.commit()
         # ! Display this in a informative textbox
