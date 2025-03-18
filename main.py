@@ -1,6 +1,7 @@
 import mysql.connector, pygame
 from Class_Accounts import Accounts
 from Class_Operations import Operations
+from hashlib import sha256
 
 #----- Local connection stuffs
 mydb = mysql.connector.connect(
@@ -13,12 +14,14 @@ mydb = mysql.connector.connect(
 cursor = mydb.cursor()
 #-----
 
-# Some login page
-# some resister page that create an user
+# TODO Some login page
+# TODO some resister page that create an user
+username_input = 'test'
+password_input = 'test'
 
 # --- Test ---
-username = 'test'
-password = 'test' #will be a hash
+username = username_input
+password = sha256(password_input.encode()).hexdigest()
 # --- ---- ---
 
 try:
@@ -37,19 +40,29 @@ try:
 except Exception:
   print("Error in account creation")
 
-balance = user.get_balance(cursor)
+# print in textbox
+# balance = user.get_balance(cursor)
 
-message_dep = Operations.deposit(cursor, mydb, user, 100, "Test_deposit", "None")
-print(message_dep)
+#button deposit that display deposit interface
+# message_dep = Operations.deposit(cursor, mydb, user, 100, "Test_deposit", "None")
+# print(message_dep)
 
-message_withd = Operations.withdraw(cursor, mydb, user, 50, "Test_withdraw", "None")
-print(message_withd)
+#button withdraw that display withdraw interface
+# message_withd = Operations.withdraw(cursor, mydb, user, 50, "Test_withdraw", "None")
+# print(message_withd)
 
-historic = Operations.history(cursor, user)
-print(historic)
 
-sorted = user.sort_by(cursor, "date", True)
-print(sorted)
+#button history that display history interface
+# historic = Operations.history(cursor, user)
+# print(historic)
 
-sorted_between = user.sort_between_dates(cursor, "2021-01-01", "2021-12-31")
-print(sorted_between)
+# lots of button that call this but with different labels
+# sorted = user.sort_by(cursor, "date", True)
+# print(sorted)
+
+# for specific dates button
+sorted_dates = user.sort_dates(cursor, "2021-01-01", "2021-12-31")
+print(sorted_dates)
+
+sorted_dates = user.sort_dates(cursor, "2021-01-01")
+print(sorted_dates)

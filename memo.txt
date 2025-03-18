@@ -21,6 +21,7 @@ SQL:
 		user_id
 
 Python
+
 	Operations(fonctions):
 		Retrait
 		Depots
@@ -32,8 +33,9 @@ Python
 		Categorie custom
 		Type
 		Montant (croissant, décroissant)
-		Date (between)
-		
+		Date (single) -> Calendar
+		Date (between) -> Calendar
+
 	Pygame
 		Page 1 - Login
 			Page de connexion
@@ -44,3 +46,11 @@ Python
 			Total dépense / mois
 			Alerte découvert
 			Graphiques
+
+
+
+
+Admin
+	can see users table
+	can revert transaction
+	can sort transaction and account tables by user

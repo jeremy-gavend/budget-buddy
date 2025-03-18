@@ -22,6 +22,10 @@ class Accounts:
         cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.user_id} ORDER BY {sorting} {order};")
         return cursor.fetchall()
     
-    def sort_between_dates(self, cursor, start: datetime, end: datetime):
-        cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.user_id} AND date BETWEEN {start} AND {end};")
+    def sort_dates(self, cursor, start: datetime, end: datetime = ''):
+        if end:
+            cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.user_id} AND date BETWEEN {start} AND {end};")
+        else:
+            cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.user_id} AND date = {start};")
+        
         return cursor.fetchall()
