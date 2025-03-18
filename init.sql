@@ -1,4 +1,4 @@
-# Launch only once to create a local database!!
+-- Launch only once to create a local database!!
 CREATE DATABASE budget_buddy;
 USE budget_buddy;
 
@@ -20,7 +20,7 @@ CREATE TABLE accounts (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-# Alternative: Create a new table when a new user is created; reuse a table with foreign key associated with user
+-- Alternative: Create a new table when a new user is created; reuse a table with foreign key associated with user
 CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
     user_id BIGINT UNSIGNED,
