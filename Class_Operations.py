@@ -1,8 +1,8 @@
 from datetime import datetime
-from Class_Accounts import Accounts
+from Class_Sessions import Sessions
 
 class Operations:
-    def withdraw(cursor, mydb, user: Accounts, amount: float, description, category):
+    def withdraw(cursor, mydb, user: Sessions, amount: float, description, category):
         """Called by the button "withdraw" """
         balance = user.get_balance(cursor)
         current_date = datetime.today()
@@ -14,7 +14,7 @@ class Operations:
         # ! Display this in a informative textbox
         return f"{user.username}, you successfully withdrew {amount} from your account at {current_date}."
 
-    def deposit(cursor, mydb, user: Accounts, amount: float, description: str, category: str):
+    def deposit(cursor, mydb, user: Sessions, amount: float, description: str, category: str):
         """ Called by the button "deposit" """
         
         balance = user.get_balance(cursor)

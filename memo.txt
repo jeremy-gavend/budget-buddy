@@ -54,3 +54,10 @@ Admin
 	can see users table
 	can revert transaction
 	can sort transaction and account tables by user
+
+
+
+notes:
+can create multiple accounts
+to show balance, has to fetch the corresponding account
+add a button for each account (coords and size depend of len(account_lists))
