@@ -2,6 +2,7 @@
 CREATE DATABASE budget_buddy;
 USE budget_buddy;
 
+-- TODO need to add "salt" column
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
@@ -21,6 +22,7 @@ CREATE TABLE accounts (
 );
 
 -- Alternative: Create a new table when a new user is created; reuse a table with foreign key associated with user
+-- TODO add "to_user_id", "from_account", "to_account" 
 CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
     user_id BIGINT UNSIGNED,

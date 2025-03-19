@@ -2,6 +2,17 @@ from datetime import datetime
 from Class_Sessions import Sessions
 
 class Operations:
+    def account_creation(self, cursor, mydb):
+        creation_date = datetime.today()
+        cursor.execute(f"INSERT INTO accounts (balance, user_id, creation_date) VALUES (0, {self.user_id}, '{creation_date}');")
+        mydb.commit()
+
+    def account_deletion(self, cursor, mydb):
+        pass
+        # TODO
+        # cursor.execute(f";")
+        # mydb.commit()
+
     def withdraw(cursor, mydb, user: Sessions, amount: float, description, category):
         """Called by the button "withdraw" """
         balance = user.get_balance(cursor)

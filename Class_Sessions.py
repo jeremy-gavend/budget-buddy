@@ -4,12 +4,13 @@ class Sessions:
     def __init__(self, user_id, username):
         self.user_id = user_id
         self.username = username
-
-    def account_creation(self, cursor, mydb):
-        creation_date = datetime.today()
-        cursor.execute(f"INSERT INTO accounts (balance, user_id, creation_date) VALUES (0, {self.user_id}, '{creation_date}');")
-        mydb.commit()
-
+        
+    def create_session(self, user_data):
+        # Put the id of the user here for the session (should be overwritten when new session is created)
+        # This is for select requests
+        user = Sessions(user_data[0], user_data[1])
+        return user
+    
     def get_balance(self, cursor):
         cursor.execute(f"SELECT balance FROM accounts WHERE user_id = {self.user_id};")
         return cursor.fetchall()[0][0]
