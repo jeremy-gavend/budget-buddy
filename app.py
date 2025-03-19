@@ -17,6 +17,7 @@ class App():
         #-----
         # Pygame inits
         pygame.init()
+        self.clock = pygame.time.Clock()
         self.screen_size = (1200, 900)
         self.screen = pygame.display.set_mode(self.screen_size)
         self.main_font = pygame.font.Font(None, 36)
@@ -27,17 +28,26 @@ class App():
         self.app_state = "login"
         # app_substate = "a"
         self.pepper = 'a' # stocked here, doesn't change
+        
+        ## Display: Info messages
+
+        self.message_text = ''
+        self.message_text2 = '' #second line for too much text
 
         # Display: Login page (input fields + buttons) 
         self.login_username_input_field = pygame.Rect(300, 100, 140, 32)
         self.login_username_field_active = False
-        self.login_username_input = 'a'
+        self.login_username_input = ''
+
+        self.login_username_label = self.main_font.render("Username", True, "black")
 
         self.login_password_input_field = pygame.Rect(300, 200, 140, 32)
         self.login_password_field_active = False
-        self.login_password_input = 'a'
+        self.login_password_input = ''
 
-        # Buttons
+        self.login_password_label = self.main_font.render("Password", True, "black")
+
+        ## Buttons
         self.login_button = pygame.Rect(self.screen_size[0]*0.5, self.screen_size[1]-50, 200, 50)
         self.login_button_text = self.main_font.render("Login", True, (0, 0, 0))
 
@@ -49,33 +59,47 @@ class App():
         self.register_last_name_input_field = pygame.Rect(300, 100, 140, 32)
         self.register_last_name_field_active = False
         self.register_last_name_input = ''
+        
+        self.register_last_name_label = self.main_font.render("Last Name", True, "black")
 
         self.register_first_name_input_field = pygame.Rect(500, 100, 140, 32)
         self.register_first_name_field_active = False
         self.register_first_name_input = ''
 
+        self.register_first_name_label = self.main_font.render("First Name", True, "black")
+
         self.register_email_input_field = pygame.Rect(300, 200, 140, 32)
         self.register_email_field_active = False
         self.register_email_input = ''
+
+        self.register_email_label = self.main_font.render("Email", True, "black")
 
         self.register_phone_input_field = pygame.Rect(500, 200, 140, 32)
         self.register_phone_field_active = False
         self.register_phone_input = ''
 
+        self.register_phone_label = self.main_font.render("Phone", True, "black")
+
         # Login related
         self.register_username_input_field = pygame.Rect(300, 300, 140, 32)
         self.register_username_field_active = False
-        self.register_username_input = 'a'
+        self.register_username_input = ''
+
+        self.register_username_label = self.main_font.render("Username", True, "black")
 
         self.register_password_input_field = pygame.Rect(300, 400, 140, 32)
         self.register_password_field_active = False
-        self.register_password_input = 'a'
+        self.register_password_input = ''
+
+        self.register_password_label = self.main_font.render("Password", True, "black")
 
         self.register_confirm_password_input_field = pygame.Rect(500, 400, 140, 32)
         self.register_confirm_password_field_active = False
         self.register_confirm_password_input = ''
 
-        # Buttons
+        self.register_confirm_password_label = self.main_font.render("Confirm Password", True, "black")
+
+        ### Buttons
         self.submit_button = pygame.Rect(self.screen_size[0]*0.5, self.screen_size[1]-50, 200, 50)
         self.submit_button_text = self.main_font.render("Submit", True, (0, 0, 0))
 
@@ -95,7 +119,10 @@ class App():
                     self.register()
                 case "main":
                     self.main()
+                case _:
+                    break
             
+            self.clock.tick(60)
             pygame.display.flip()
 
         pygame.quit()
@@ -111,16 +138,33 @@ class App():
             login_password_field_color = 'lightblue'
         else:
             login_password_field_color = 'lightgray'
-
+        # Label: Username
+        self.screen.blit(self.login_username_label, pygame.Rect(300, 50, 140, 32)) # TODO relative to the box it belong
+        # Field: Username
         pygame.draw.rect(self.screen, login_username_field_color, self.login_username_input_field)
-        self.login_username_render = self.main_font.render(self.login_username_input, True, "black")
-        self.screen.blit(self.login_username_render,self.login_username_input_field)
+        self.login_username_button_label_render = self.main_font.render(self.login_username_input, True, "black")
+        self.screen.blit(self.login_username_button_label_render,self.login_username_input_field)
 
+        # Label: Password
+        self.screen.blit(self.login_password_label, pygame.Rect(300, 150, 140, 32)) # TODO relative to the box it belong
+        # Field: Password
         pygame.draw.rect(self.screen, login_password_field_color, self.login_password_input_field)
-        self.login_password_render = self.main_font.render(self.login_password_input, True, "black")
-        self.screen.blit(self.login_password_render,self.login_password_input_field)
+        self.login_password_button_label_render = self.main_font.render(self.login_password_input, True, "black")
+        self.screen.blit(self.login_password_button_label_render,self.login_password_input_field)
 
-        # Buttons
+        ## Info message
+        # TODO put a timer that makes this clear after x frames        
+        self.login_information = self.main_font.render(self.message_text, True, "orange")
+        self.screen.blit(self.login_information, pygame.Rect(200, 800, 140, 32))
+        
+        self.login_information2 = self.main_font.render(self.message_text2, True, "orange")
+        self.screen.blit(self.login_information2, pygame.Rect(200, 820, 140, 32))
+
+        # TODO make a class or a function that give another color depending of the error (but edit the same text)
+        # self.login_error = self.main_font.render(self.message_text, True, "red")
+        # self.screen.blit(self.login_error, pygame.Rect(200, 800, 140, 32))
+
+        ### Buttons
         self.screen.blit(self.login_button_text, self.login_button)
         self.screen.blit(self.register_button_text, self.register_button)
 
@@ -162,35 +206,65 @@ class App():
             register_confirm_password_field_color = 'lightgray'
 
         # TODO seems like this can be a function
+        # Label
+        self.screen.blit(self.register_last_name_label, pygame.Rect(300, 50, 140, 32))
+        # Field
         pygame.draw.rect(self.screen, register_last_name_field_color, self.register_last_name_input_field)
         self.register_last_name_render = self.main_font.render(self.register_last_name_input, True, "black")
         self.screen.blit(self.register_last_name_render, self.register_last_name_input_field)
 
+        # Label
+        self.screen.blit(self.register_first_name_label, pygame.Rect(500, 50, 140, 32))
+        # Field
         pygame.draw.rect(self.screen, register_first_name_field_color, self.register_first_name_input_field)
         self.register_first_name_render = self.main_font.render(self.register_first_name_input, True, "black")
         self.screen.blit(self.register_first_name_render, self.register_first_name_input_field)
-
+ 
+        # Label
+        self.screen.blit(self.register_email_label, pygame.Rect(300, 150, 140, 32))
+        # Field
         pygame.draw.rect(self.screen, register_email_field_color, self.register_email_input_field)
         self.register_email_render = self.main_font.render(self.register_email_input, True, "black")
         self.screen.blit(self.register_email_render, self.register_email_input_field)
 
+        # Label
+        self.screen.blit(self.register_phone_label, pygame.Rect(500, 150, 140, 32))
+        # Field
         pygame.draw.rect(self.screen, register_phone_field_color, self.register_phone_input_field)
         self.register_phone_render = self.main_font.render(self.register_phone_input, True, "black")
         self.screen.blit(self.register_phone_render, self.register_phone_input_field)
 
+        # Label
+        self.screen.blit(self.register_username_label, pygame.Rect(300, 250, 140, 32))
+        # Field
         pygame.draw.rect(self.screen, register_username_field_color, self.register_username_input_field)
         self.register_username_render = self.main_font.render(self.register_username_input, True, "black")
         self.screen.blit(self.register_username_render, self.register_username_input_field)
 
+        # Label
+        self.screen.blit(self.register_password_label, pygame.Rect(300, 350, 140, 32))
+        # Field
         pygame.draw.rect(self.screen, register_password_field_color, self.register_password_input_field)
         self.register_password_render = self.main_font.render(self.register_password_input, True, "black")
         self.screen.blit(self.register_password_render, self.register_password_input_field)
 
+        # Label
+        self.screen.blit(self.register_confirm_password_label, pygame.Rect(500, 350, 140, 32))
+        # Field
         pygame.draw.rect(self.screen, register_confirm_password_field_color, self.register_confirm_password_input_field)
         self.register_confirm_password_render = self.main_font.render(self.register_confirm_password_input, True, "black")
         self.screen.blit(self.register_confirm_password_render, self.register_confirm_password_input_field)
 
-        # Buttons
+        ## Messages 
+        self.register_information = self.main_font.render(self.message_text, True, "orange")
+        self.screen.blit(self.register_information, pygame.Rect(200, 800, 140, 32))
+
+        self.register_information2 = self.main_font.render(self.message_text2, True, "orange")
+        self.screen.blit(self.register_information2, pygame.Rect(200, 820, 140, 32))
+        # self.register_error = self.main_font.render(self.message_text, True, "red")
+        # self.screen.blit(self.register_error, pygame.Rect(200, 800, 140, 32))
+
+        ### Buttons
         self.screen.blit(self.submit_button_text, self.submit_button)
         self.screen.blit(self.cancel_button_text, self.cancel_button)
 
@@ -199,49 +273,66 @@ class App():
 
     def verif_login(self):
         self.cursor.execute(f"SELECT salt FROM users WHERE username = '{self.login_username_input}';")
-        salt = self.cursor.fetchall()[0][0]
+        try:
+            salt = self.cursor.fetchall()[0][0]
+            raw_password = self.pepper + self.login_password_input + salt
+            password = sha256(raw_password.encode()).hexdigest()
 
-        raw_password = self.pepper + self.register_password_input + salt
-        password = sha256(raw_password.encode()).hexdigest()
-        
-        self.cursor.execute(f"SELECT id, username FROM users WHERE username = '{self.login_username_input}' AND password = '{password}';")
-        user_data = self.cursor.fetchall()
+            self.cursor.execute(f"SELECT id, username FROM users WHERE username = '{self.login_username_input}' AND password = '{password}';")
+            user_data = self.cursor.fetchall()
 
-        if bool(self.cursor.fetchall()):
-            return user_data[0][0], user_data[0][1]
+            if bool(user_data):
+                return user_data[0][0], user_data[0][1]
+        except Exception:
+            self.message_text = "Error in retriving user data!"
         return False
 
     def login_failed(self):
-        pass
+        self.message_text = "Login failed! Please verify if the username or password is correct"
+
+    def create_session(self, user_data):
+        self.user = Sessions.create_session(user_data)
 
     def create_account(self):
         """Called when clicking "submit" in register menu"""
+        # TODO to simplify when refractored in loop (with a 'for'?)
         if not self.register_last_name_input or not self.register_first_name_input or not self.register_email_input or not self.register_phone_input or not self.register_username_input or not self.register_password_input or not self.register_confirm_password_input:
-            print("Please fill all the forms")
+            self.message_text = "Please fill all the forms"
         # Check if username already exists in "users" database
+        elif not self.email_is_valid():
+            self.message_text = "Email not valid!"
+        elif not self.phone_is_valid():
+            self.message_text = "Phone not valid!"
         elif self.username_exists():
-            print("Username already exists!")
+            self.message_text = "Username already exists!"
         elif self.register_password_input != self.register_confirm_password_input:
-            print("Passwords must be the same!")
+            self.message_text = "Passwords must be the same!"
+        elif not self.password_is_valid():
+            self.message_text = "Password must be 10 to 99 characters long, contain 1 uppercase letter,"
+            self.message_text2 = "1 lowercase letter, a number and a special symbol!"
         else:  
-            # Check if password is valid (6-20 chara, 1 upper and 1 lower case, 1 number and 1 special chara)
-            if self.password_is_valid():
-                salt = 'b' # need to create a column for it in user
-                username = self.register_username_input
-                raw_password = self.pepper + self.register_password_input + salt
-                password = sha256(raw_password.encode()).hexdigest()
-                last_name = self.register_last_name_input
-                first_name = self.register_first_name_input
-                email = self.register_email_input
-                phone = self.register_phone_input
+            salt = 'b' # need to create a column for it in user
+            username = self.register_username_input
+            raw_password = self.pepper + self.register_password_input + salt
+            password = sha256(raw_password.encode()).hexdigest()
+            last_name = self.register_last_name_input
+            first_name = self.register_first_name_input
+            email = self.register_email_input
+            phone = self.register_phone_input
 
-                self.cursor.execute(f"INSERT INTO users (username, password, salt, last_name, first_name, email, phone) \
-                                     VALUES ('{username}', '{password}', '{salt}', '{last_name}', '{first_name}', '{email}', '{phone}'")
-                self.mydb.commit()
-                return True
-            else:
-                print("Password must be 6 to 20 character long, contain 1 uppercase letter, 1 lowercase latter, a number and a special symbol!") 
+            self.cursor.execute(f"INSERT INTO users (username, password, salt, last_name, first_name, email, phone) \
+                                     VALUES ('{username}', '{password}', '{salt}', '{last_name}', '{first_name}', '{email}', '{phone}');")
+            self.mydb.commit()
+            return True
         return False
+
+    def email_is_valid(self):
+        regex_pattern = re.compile('^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$')
+        return regex_pattern.match(self.register_email_input)
+
+    def phone_is_valid(self):
+        regex_pattern = re.compile('^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$')
+        return regex_pattern.match(self.register_phone_input)
 
     def username_exists(self):
         self.cursor.execute(f"SELECT username FROM users where username = '{self.register_username_input}'")
@@ -249,7 +340,7 @@ class App():
 
     def password_is_valid(self):
         # Something like: ^ is first chara, % is last chara checked, . and * are wildcards or something, ? too I think and the = I don't know but it works (I think)        
-        regex_pattern = re.compile('^(?=\S{6,20}$)(?=.*?\d)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^A-Za-z\s0-9])')
+        regex_pattern = re.compile('^(?=\S{10,99}$)(?=.*?\d)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[^A-Za-z\s0-9])')
 
         return regex_pattern.match(self.register_password_input)
 
@@ -276,21 +367,35 @@ class App():
                             self.create_session(logged_user)
                             self.app_state = "main"
                         else:
-                            self.login_failed() # TODO
+                            self.login_failed()
                     if self.register_button.collidepoint(event.pos):
                         self.app_state = "register"
 
                 if event.type == pygame.KEYDOWN: # TODO need to simplify this
-                    if self.login_username_field_active:
-                        if event.key == pygame.K_BACKSPACE:
-                            self.login_username_input = self.login_username_input[:-1]
+                    if event.key == pygame.K_RETURN:
+                        logged_user = self.verif_login()
+                        if logged_user:
+                            self.create_session(logged_user)
+                            self.app_state = "main"
                         else:
-                            self.login_username_input += event.unicode
-                    if self.login_password_field_active:
+                            self.login_failed()
+                    elif self.login_password_field_active:
                         if event.key == pygame.K_BACKSPACE:
                             self.login_password_input = self.login_password_input[:-1]
+                        elif event.key == pygame.K_TAB:
+                            self.login_username_field_active = True
+                            self.login_password_field_active = False
                         else:
                             self.login_password_input += event.unicode
+                    elif self.login_username_field_active:
+                        if event.key == pygame.K_BACKSPACE:
+                            self.login_username_input = self.login_username_input[:-1]
+                        elif event.key == pygame.K_TAB:
+                            self.login_username_field_active = False
+                            self.login_password_field_active = True
+                        else:
+                            self.login_username_input += event.unicode
+
 
             if app_state == "register":
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -368,21 +473,25 @@ class App():
                             self.app_state = "login"
 
                 if event.type == pygame.KEYDOWN: # TODO need to simplify this
-                    if self.register_confirm_password_field_active:
+                    if event.key == pygame.K_RETURN:
+                        if self.create_account():
+                            self.app_state = "login"
+                    elif self.register_confirm_password_field_active:
                         if event.key == pygame.K_BACKSPACE:
                             self.register_confirm_password_input = self.register_confirm_password_input[:-1]
-                        elif event.key == pygame.K_RETURN:
-                            if self.create_account():
-                                self.app_state = "login"
                         elif event.key == pygame.K_TAB:
-                            pass
+                            self.register_last_name_field_active = True
+                            self.register_first_name_field_active = False
+                            self.register_email_field_active = False
+                            self.register_phone_field_active = False
+                            self.register_username_field_active = False 
+                            self.register_password_field_active = False
+                            self.register_confirm_password_field_active = False
                         else:
                             self.register_confirm_password_input += event.unicode
-                    if self.register_password_field_active:
+                    elif self.register_password_field_active:
                         if event.key == pygame.K_BACKSPACE:
                             self.register_password_input = self.register_password_input[:-1]
-                        elif event.key == pygame.K_RETURN:
-                            pass
                         elif event.key == pygame.K_TAB:
                             self.register_last_name_field_active = False
                             self.register_first_name_field_active = False
@@ -394,11 +503,9 @@ class App():
                         else:
                             self.register_password_input += event.unicode
 
-                    if self.register_username_field_active:
+                    elif self.register_username_field_active:
                         if event.key == pygame.K_BACKSPACE:
                             self.register_username_input = self.register_username_input[:-1]
-                        elif event.key == pygame.K_RETURN:
-                            pass
                         elif event.key == pygame.K_TAB:
                             self.register_last_name_field_active = False
                             self.register_first_name_field_active = False
@@ -410,11 +517,9 @@ class App():
                         else:
                             self.register_username_input += event.unicode
 
-                    if self.register_phone_field_active:
+                    elif self.register_phone_field_active:
                         if event.key == pygame.K_BACKSPACE:
                             self.register_phone_input = self.register_phone_input[:-1]
-                        elif event.key == pygame.K_RETURN:
-                            pass
                         elif event.key == pygame.K_TAB:
                             self.register_last_name_field_active = False
                             self.register_first_name_field_active = False
@@ -426,11 +531,9 @@ class App():
                         else:
                             self.register_phone_input += event.unicode
 
-                    if self.register_email_field_active:
+                    elif self.register_email_field_active:
                         if event.key == pygame.K_BACKSPACE:
                             self.register_email_input = self.register_email_input[:-1]
-                        elif event.key == pygame.K_RETURN:
-                            pass
                         elif event.key == pygame.K_TAB:
                             self.register_last_name_field_active = False
                             self.register_first_name_field_active = False
@@ -442,11 +545,9 @@ class App():
                         else:
                             self.register_email_input += event.unicode
                             
-                    if self.register_first_name_field_active:
+                    elif self.register_first_name_field_active:
                         if event.key == pygame.K_BACKSPACE:
                             self.register_first_name_input = self.register_first_name_input[:-1]
-                        elif event.key == pygame.K_RETURN:
-                            pass
                         elif event.key == pygame.K_TAB:
                             self.register_last_name_field_active = False
                             self.register_first_name_field_active = False
@@ -458,11 +559,9 @@ class App():
                         else:
                             self.register_first_name_input += event.unicode
 
-                    if self.register_last_name_field_active:
+                    elif self.register_last_name_field_active:
                         if event.key == pygame.K_BACKSPACE:
                             self.register_last_name_input = self.register_last_name_input[:-1]
-                        elif event.key == pygame.K_RETURN:
-                            pass
                         elif event.key == pygame.K_TAB:
                             self.register_last_name_field_active = False
                             self.register_first_name_field_active = True
@@ -485,7 +584,7 @@ class App():
                 # try:
                 #     self.user.account_creation(cursor, mydb)
                 # except Exception:
-                #     print("Error in account creation")
+                #     self.message_text = "Error in account creation"
 
 
 # ---Tests---

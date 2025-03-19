@@ -17,7 +17,7 @@ class Operations:
         """Called by the button "withdraw" """
         balance = user.get_balance(cursor)
         current_date = datetime.today()
- 
+        #TODO add verif to check if balance is enough
         cursor.execute(f"UPDATE accounts SET balance = {balance - amount} WHERE user_id = {user.user_id};")
         cursor.execute(f"INSERT INTO transactions (user_id, amount, description, date, type, category) VALUES ({user.user_id}, {amount}, '{description}', '{current_date}', 'withdraw', '{category}');")
 

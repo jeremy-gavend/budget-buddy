@@ -5,7 +5,7 @@ class Sessions:
         self.user_id = user_id
         self.username = username
         
-    def create_session(self, user_data):
+    def create_session(user_data):
         # Put the id of the user here for the session (should be overwritten when new session is created)
         # This is for select requests
         user = Sessions(user_data[0], user_data[1])
