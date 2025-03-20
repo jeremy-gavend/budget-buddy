@@ -15,12 +15,12 @@ class Sessions:
         cursor.execute(f"SELECT balance FROM accounts WHERE user_id = {self.user_id};")
         return cursor.fetchall()[0][0]
     
-    def sort_by(self, cursor, sorting: str,  ascending: bool):
+    def sort_by(self, cursor, table, sorting: str, ascending: bool):
         if ascending:
             order = "ASC"
         else:
             order = "DESC"
-        cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.user_id} ORDER BY {sorting} {order};")
+        cursor.execute(f"SELECT * FROM {table} WHERE user_id = {self.user_id} ORDER BY '{sorting}' {order};")
         return cursor.fetchall()
     
     def sort_dates(self, cursor, start: datetime, end: datetime = ''):
