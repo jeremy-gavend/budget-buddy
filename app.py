@@ -5,6 +5,10 @@ from Class_Buttons import Buttons, Textbox, Messages
 from hashlib import sha256
 import re
 
+# for curbs
+# import matplotlib
+# import numpy as np
+
 class App():
     def __init__(self):
         #----- Local connection stuffs
@@ -104,7 +108,7 @@ class App():
         # Account buttons
         self.main_account_buttons = {
             "create": Buttons((50, 400), (100,25), "CREATE ACCOUNT", self.main_font),
-            "delete": Buttons((100, 400), (100,25), "DELETE ACCOUNT", self.main_font)
+            "delete": Buttons((250, 400), (100,25), "DELETE ACCOUNT", self.main_font)
         }
 
         # Operations buttons
@@ -114,9 +118,18 @@ class App():
             "transfert": Buttons((1100, 100), (100, 25), "TRANSFERT", self.main_font)
         }
 
+        # Text fields for operations
+        self.main_operation_textboxes = {
+            "to_user":  Textbox((150, 200), (100, 25), self.sort_font, tab_to="to_account"),
+            "to_account": Textbox((150, 200), (100, 25), self.sort_font, tab_to="amount"),
+            "amount": Textbox((150, 200), (100, 25), self.sort_font, tab_to="category"),
+            "category": Textbox((150, 200), (100, 25), self.sort_font, tab_to="description"),
+            "description": Textbox((150, 200), (100, 25), self.sort_font, tab_to="to_user")
+        }
+
         # Quit button
         self.main_buttons = {
-            "logoff": Buttons((100, 700), (100, 25), "LOG OFF", self.main_font, link_to="login")
+            "logout": Buttons((100, 700), (100, 25), "LOG OUT", self.main_font, link_to="login")
         }
 
         # TODO
@@ -182,7 +195,7 @@ class App():
 
         # TODO account display (+ username)
         # [TOP-LEFT]
-        self.account_messages["balance"].text = self.user.get_balance(self.cursor)
+        self.account_messages["balance"].text = [str(self.user.get_balance(self.cursor))]
         for message in self.account_messages.values():
             message.draw(self)
 
@@ -294,12 +307,26 @@ class App():
     
     def convert_table_to_row(self, table, value, user):
         # TODO make it so the username appear in place of user_id (from and to)
-        self.cursor.execute(f"SELECT * FROM {table} WHERE user_id = {user.user_id}")
         # TODO condition to select the "to user" and display it
-        rows = self.cursor.fetchall()
         value = []
+
+        self.cursor.execute(f"SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{table}'")
+        first_column = self.cursor.fetchall()
+
+        for row in first_column:
+            data_str = ''
+            for data in row:
+                data_str += f"{data} |"
+            value.append(f"{data_str}")
+        
+        self.cursor.execute(f"SELECT * FROM {table} WHERE user_id = {user.user_id}")
+        rows = self.cursor.fetchall()
+
         for row in rows:
-            value.append(f"{row[0]} | {row[1]} | {row[2]}| {row[3]} | {row[4]} | | {row[5]}")
+            data_str = ''
+            for data in row:
+                data_str += f"{data} |"
+            value.append(f"{data_str}")
 
     def events(self, app_state):
         for event in pygame.event.get():
@@ -322,6 +349,7 @@ class App():
                                     self.create_session(logged_user)
                                     self.login_textboxes["password"].text = '' # To delete the password in the field once sucessfully connected
                                     self.login_textboxes["password"].text_spoof = '' # To delete the stars in the sky
+                                    self.login_textboxes["password"].active = False
                                     self.app_state = button.link_to
                                     break
                                 else:
@@ -337,6 +365,8 @@ class App():
                         if logged_user:
                             self.create_session(logged_user)
                             self.login_textboxes["password"].text = '' #To delete the password in the field once sucessfully connected
+                            self.login_textboxes["password"].text_spoof = '' # To delete the stars in the sky
+                            self.login_textboxes["password"].active = False
                             self.app_state = "main"
                         else:
                             self.login_failed()
@@ -353,11 +383,10 @@ class App():
                                     self.login_textboxes[textbox.tab_to].active = True
                                     break
                                 else:
-                                    previous_lenght = len(textbox.text)
+                                    previous_lenght = len(textbox.text) # Prevent to add stars when no characters is added
                                     textbox.text += event.unicode
                                     if index == "password" or index == "confirm_password":
-                                        for i in range(len(textbox.text) - previous_lenght):
-                                            textbox.text_spoof += "*"
+                                        textbox.spoof_text(previous_lenght)
                                     break
 
             if app_state == "register":
@@ -396,8 +425,7 @@ class App():
                                     previous_lenght = len(textbox.text)
                                     textbox.text += event.unicode
                                     if index == "password" or index == "confirm_password":
-                                        for i in range(len(textbox.text) - previous_lenght):
-                                            textbox.text_spoof += "*"
+                                        textbox.spoof_text(previous_lenght)
                                     break
 
             if self.app_state == "main":
@@ -414,8 +442,6 @@ class App():
                     for index, button in self.main_operation_buttons.items():
                         if button.rect.collidepoint(event.pos):
                             Operations.operation(self, index)           
-
-
 
 
 # --- Test ---

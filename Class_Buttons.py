@@ -57,11 +57,9 @@ class Textbox:
             label_render = self.label_font.render(self.label, True, self.label_color)
             app.screen.blit(label_render, self.label_rect)
 
-    def activate(self):
-        pass #event
-
-    def spoof_text(self):
-        pass #event
+    def spoof_text(self, previous_lenght):
+        for i in range(len(self.text) - previous_lenght):
+            self.text_spoof += "*"
 
 class Messages:
     def __init__(self, coords, size, text = [], color = "black", set_timeout = False):

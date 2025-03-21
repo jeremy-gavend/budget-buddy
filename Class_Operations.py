@@ -11,12 +11,14 @@ class Operations:
         app.mydb.commit()
  # TODO add a condition to delete transactions if both id_user (from and to) doesn't exist
 
-    def operation(app, operation): #amount: float, description: str, category: str
+    def operation(app, operation):
         # TODO add from_user, from_account, to_user, to_account
         # TEST
-        amount = 10
-        description = 'test'
-        category = 'test'
+        amount = app.main_operation_textboxes["amount"].text
+        description = app.main_operation_textboxes["description"].text
+        category = app.main_operation_textboxes["category"].text
+        to_user = app.main_operation_textboxes["to_user"].text
+        to_account = app.main_operation_textboxes["to_account"].text
         #-----
         try:
             balance = app.user.get_balance(app.cursor)
@@ -39,5 +41,6 @@ class Operations:
             return 
         app.mydb.commit()
         
-        app.cursor.execute(f"INSERT INTO transactions (user_id, amount, description, date, type, category) VALUES ({app.user.user_id}, {amount}, '{description}', '{current_date}', '{operation}', '{category}');")
+        # Write to transaction table
+        app.cursor.execute(f"INSERT INTO transactions (user_id, account, to_user_id, to_account, amount, description, date, type, category) VALUES ({app.user.user_id}, {app.user.selected_account_id}, {to_user}, {to_account}, {amount}, '{description}', '{current_date}', '{operation}', '{category}');")
         app.mydb.commit()
