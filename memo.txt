@@ -62,4 +62,3 @@ can create multiple accounts
 to show balance, has to fetch the corresponding account
 add a button for each account (coords and size depend of len(account_lists))
 
-transaction shows deposit depending of the account selected (SELECT "from account nb" and SELECT "to account nb")
