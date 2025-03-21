@@ -4,6 +4,7 @@ class Sessions:
     def __init__(self, user_id, username):
         self.user_id = user_id
         self.username = username
+        self.selected_account_id = 1
         
     def create_session(user_data):
         # Put the id of the user here for the session (should be overwritten when new session is created)
@@ -13,8 +14,12 @@ class Sessions:
     
     def get_balance(self, cursor):
         cursor.execute(f"SELECT balance FROM accounts WHERE user_id = {self.user_id};")
-        return cursor.fetchall()[0][0]
-    
+        data = cursor.fetchall()
+        if data:
+            return data[0][0]
+        else:
+            return ''
+        
     def sort_by(self, cursor, table, sorting: str, ascending: bool):
         if ascending:
             order = "ASC"

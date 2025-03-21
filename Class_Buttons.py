@@ -63,5 +63,33 @@ class Textbox:
     def spoof_text(self):
         pass #event
 
+class Messages:
+    def __init__(self, coords, size, text = [], color = "black", set_timeout = False):
+        self.coords = coords
+        self.size = size
 
-# self.active, need to change color when active
+        self.text = text
+        self.color = color
+
+        self.set_timeout = set_timeout
+        self.timeout = 0
+        self.previous_text = ''
+        
+
+    def draw(self, app):
+        line_offset = 0
+        # Make message disappear after set frames
+        if not self.text or self.text != self.previous_text:
+            self.timeout = 200
+            self.previous_text = self.text
+        if self.timeout == 0:
+            self.text = ''
+
+        if self.timeout > 0:    
+            for line in self.text:
+                rect = pygame.Rect(self.coords[0], self.coords[1]+line_offset, self.size[0], self.size[1])
+                text_render = app.main_font.render(line, True, self.color)
+                app.screen.blit(text_render, rect)
+                line_offset += 20
+            if self.set_timeout:
+                self.timeout -= 1

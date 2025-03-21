@@ -1,7 +1,7 @@
 import mysql.connector, pygame
 from Class_Sessions import Sessions
 from Class_Operations import Operations
-from Class_Buttons import Buttons, Textbox
+from Class_Buttons import Buttons, Textbox, Messages
 from hashlib import sha256
 import re
 
@@ -31,11 +31,19 @@ class App():
         # app_substate = "a"
         self.pepper = 'a' # stocked here, doesn't change
         
-        ## Display: Info messages
-        self.message_text = ''
-        self.message_text2 = '' #second line for too much text
-        # TODO have to clear all lines when a new message pop
-        # TODO have to time them so they dissapear in x sec
+        # TODO can select a area that select the account, updating the display above (showing balance), highligting the row and show trnsactions
+        # TODO (active account affects all requests (withdraw, sorts, etc))
+        # TODO display the related transaction for a selected account
+        ## Display: Text displays
+        self.info_message = Messages((200, 800), (140, 32), color="orange", set_timeout=True)
+        self.account_messages = {
+            "username": Messages((50,50), (100, 32)),
+            "balance": Messages((50,100), (100, 32))
+        }
+        self.tables = {
+            "transactions": Messages((1000, 500), (400, 600)),
+            "accounts": Messages((500, 500), (400, 600))
+        }
 
         # Display: Login page (input fields + buttons) 
         self.login_textboxes = {
@@ -68,13 +76,6 @@ class App():
         }
 
         # Display: Main page
-
-        # Tables 
-        self.tables = {
-            "transactions": [],
-            "accounts": []
-        }
-
         # Sort buttons
         # TODO function when clicked another time, it change asc to desc (sort_order = not sort order -> if sort_order then cursor.execute= [...] {sorting} sorting = "ASC;" else "DESC")
         self.main_sort_transactions_buttons = {
@@ -83,15 +84,34 @@ class App():
             "amount": Buttons((300, 100), (100, 25), "AMOUNT", self.sort_font),
             "date": Buttons((400, 100), (100, 25), "DATE", self.sort_font),
             "type": Buttons((500, 100), (100, 25), "TYPE", self.sort_font),
-            "category": Buttons((600, 100), (100, 25), "CATEGORY", self.sort_font),
-            "dates": Buttons((700, 100), (100, 25), "DATES...", self.sort_font)
+            "category": Buttons((600, 100), (100, 25), "CATEGORY", self.sort_font)
         }
 
-        # Actions buttons
-        self.main_action_buttons = {
-            "deposit": Buttons((900, 100), (100, 25), "DEPOSIT", self.sort_font),
-            "withdraw": Buttons((1000, 100), (100, 25), "WITHDRAW", self.sort_font),
-            "transfert": Buttons((1100, 100), (100, 25), "TRANSFERT", self.sort_font)
+        # Filter buttons
+        # TODO must be textbox and write the filter value directly
+        # TODO if one label of date is empty, search for 1 date only
+        # TODO place them below related sort buttons
+        self.main_filter_transactions_buttons = {
+            "dates": Textbox((100, 200), (100, 25), self.sort_font, tab_to="dates2"),
+            "dates2": Textbox((150, 200), (100, 25), self.sort_font, tab_to="dates"),
+            "from": Textbox((200, 200), (100, 25), self.sort_font, tab_to="to"),
+            "to": Textbox((300, 200), (100, 25), self.sort_font, tab_to="from"),
+            "amount": Textbox((400, 200), (100, 25), self.sort_font),
+            "type": Textbox((500, 200), (100, 25), self.sort_font),
+            "category": Textbox((600, 200), (100, 25), self.sort_font)
+        }
+
+        # Account buttons
+        self.main_account_buttons = {
+            "create": Buttons((50, 400), (100,25), "CREATE ACCOUNT", self.main_font),
+            "delete": Buttons((100, 400), (100,25), "DELETE ACCOUNT", self.main_font)
+        }
+
+        # Operations buttons
+        self.main_operation_buttons = {
+            "deposit": Buttons((900, 100), (100, 25), "DEPOSIT", self.main_font),
+            "withdraw": Buttons((1000, 100), (100, 25), "WITHDRAW", self.main_font),
+            "transfert": Buttons((1100, 100), (100, 25), "TRANSFERT", self.main_font)
         }
 
         # Quit button
@@ -138,18 +158,7 @@ class App():
             button.draw(self, index)
 
         ## Info message
-
-        # TODO make it so it display a custom number of lines and clear them all on new message
-        # TODO put a timer that makes this clear after x frames        
-        self.login_information = self.main_font.render(self.message_text, True, "orange")
-        self.screen.blit(self.login_information, pygame.Rect(200, 800, 140, 32))
-        
-        self.login_information2 = self.main_font.render(self.message_text2, True, "orange")
-        self.screen.blit(self.login_information2, pygame.Rect(200, 820, 140, 32))
-
-        # TODO make a class or a function that give another color depending of the error (but edit the same text)
-        # self.login_error = self.main_font.render(self.message_text, True, "red")
-        # self.screen.blit(self.login_error, pygame.Rect(200, 800, 140, 32))
+        self.info_message.draw(self)
 
         ### Buttons
         for button in self.login_buttons.values():
@@ -159,14 +168,8 @@ class App():
         for index, button in self.register_textboxes.items():
             button.draw(self, index)
 
-        ## Messages 
-        self.register_information = self.main_font.render(self.message_text, True, "orange")
-        self.screen.blit(self.register_information, pygame.Rect(200, 800, 140, 32))
-
-        self.register_information2 = self.main_font.render(self.message_text2, True, "orange")
-        self.screen.blit(self.register_information2, pygame.Rect(200, 820, 140, 32))
-        # self.register_error = self.main_font.render(self.message_text, True, "red")
-        # self.screen.blit(self.register_error, pygame.Rect(200, 800, 140, 32))
+        ## Messages
+        self.info_message.draw(self)
 
         ### Buttons
         for button in self.register_buttons.values():
@@ -174,25 +177,45 @@ class App():
 
     def main(self):
 
+        # !
+        # TODO create lines around each lines
+
         # TODO account display (+ username)
         # [TOP-LEFT]
+        self.account_messages["balance"].text = self.user.get_balance(self.cursor)
+        for message in self.account_messages.values():
+            message.draw(self)
+
+        for index, button in self.main_account_buttons.items():
+            button.draw(self)
 
         # TODO Either display all accounts and transfert by id to id, or select an account and display it, then transfert from it
+
+        #[BOTTOM-LEFT]
+        for table, rows in self.tables.items():
+            self.convert_table_to_row(table, rows.text, self.user)
+            rows.draw(self)
+
+        
+        # TODO Accounts lists (selectable)
+
+
+        # TODO self.active, need to change color when active
+      
+        #[TOP-RIGHT]
+        # TODO Transaction actions (sub_state)
+        for button in self.main_operation_buttons.values():
+            button.draw(self)
+        #[BOTTOM-RIGHT]
         # Sort buttons
         for button in self.main_sort_transactions_buttons.values():
             button.draw(self)
         # TODO Transaction list display
-        y = 500
-        for row in self.tables["transactions"]:
-            self.row_draw(row, y)
-        #[BOTTOM-LEFT]
+        
+        ## Messages
+        self.info_message.draw(self)
 
-        # TODO Transaction actions (sub_state)
-        #[RIGHT]
-        for button in self.main_action_buttons.values():
-            button.draw(self)
-
-        # Quit button
+        ### Quit button
         for button in self.main_buttons.values():
             button.draw(self)
 
@@ -209,34 +232,34 @@ class App():
             if bool(user_data):
                 return user_data[0][0], user_data[0][1]
         except Exception:
-            self.message_text = "Error in retriving user data!"
+            self.info_message.text = ["Error in retriving user data!"]
         return False
 
     def login_failed(self):
-        self.message_text = "Login failed! Please verify if the username or password is correct"
+        self.info_message.text = ["Login failed! Please verify if the username or password is correct"]
 
     def create_session(self, user_data):
         self.user = Sessions.create_session(user_data)
+        self.account_messages["username"].text = [self.user.username]
 
     def create_account(self):
         """Called when clicking "submit" in register menu"""
         for index, textbox in self.register_textboxes.items():
             if not textbox.text:
-                self.message_text = "Please fill all the forms"
+                self.info_message.text = ["Please fill all the forms"]
                 return False
             elif not self.is_valid(index, textbox.text):
-                self.message_text = f"{index.capitalize()} not valid!"
+                self.info_message.text = [f"{index.capitalize()} not valid!"]
                 if index == "password":
-                    self.message_text = "Password must be 10 to 99 characters long, contain 1 uppercase letter,"
-                    self.message_text2 = "1 lowercase letter, a number and a special symbol!"
+                    self.info_message.text = ["Password must be 10 to 99 characters long, contain 1 uppercase letter,", "1 lowercase letter, a number and a special symbol!"]
                 return False
             elif index == "password":
                 if textbox.text != self.register_textboxes["confirm_password"].text:
-                    self.message_text = "Passwords must be the same!"
+                    self.info_message.text = ["Passwords must be the same!"]
                     return False
             elif index == "username":
                 if self.username_exists(textbox.text):
-                    self.message_text = "Username already exists!"
+                    self.info_message.text = ["Username already exists!"]
                     return False
         
         salt = 'b'
@@ -254,6 +277,7 @@ class App():
         return True
 
     def is_valid(self, index, text):
+        # TODO fix invalid escape sequence
         if index == "email":
             regex_pattern = re.compile('^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$')
         elif index == "phone":
@@ -267,14 +291,15 @@ class App():
     def username_exists(self, text):
         self.cursor.execute(f"SELECT username FROM users where username = '{text}'")
         return self.cursor.fetchall()
-
-    def row_draw(self, row, y):
-        string = f"{row[0]} | {row[1]} | {row[2]}| {row[3]} | {row[4]} | | {row[5]}"
-        rect = pygame.rect(100, 200+y, 500, 25) 
-        text_render = self.text_font.render(string, True, self.text_color)
-        self.screen.blit(text_render, rect)
-
-        # TODO create lines around each lines
+    
+    def convert_table_to_row(self, table, value, user):
+        # TODO make it so the username appear in place of user_id (from and to)
+        self.cursor.execute(f"SELECT * FROM {table} WHERE user_id = {user.user_id}")
+        # TODO condition to select the "to user" and display it
+        rows = self.cursor.fetchall()
+        value = []
+        for row in rows:
+            value.append(f"{row[0]} | {row[1]} | {row[2]}| {row[3]} | {row[4]} | | {row[5]}")
 
     def events(self, app_state):
         for event in pygame.event.get():
@@ -382,13 +407,14 @@ class App():
                             self.app_state = button.link_to
                     for index, button in self.main_sort_transactions_buttons.items():
                         if button.rect.collidepoint(event.pos):
-                            if index == "dates":
-                                pass # TODO add a calendar + make a special "between" and "date = xx/xx/xx" request
-                            else:
-                                self.tables["transactions"] = self.user.sort_by(self.cursor, "transactions", index, True)
-                    for index, button in self.main_action_buttons.items():
+                            self.tables["transactions"].text = self.user.sort_by(self.cursor, "transactions", index, True)
+                    for index, button in self.main_account_buttons.items():
+                        if button.rect.collidepoint(event.pos):
+                            Operations.manage_account(self, index)  
+                    for index, button in self.main_operation_buttons.items():
                         if button.rect.collidepoint(event.pos):
                             Operations.operation(self, index)           
+
 
 
 
