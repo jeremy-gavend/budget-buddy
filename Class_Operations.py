@@ -7,13 +7,18 @@ class Operations:
         if action == "create":
             app.cursor.execute(f"INSERT INTO accounts (balance, user_id, creation_date) VALUES (0, {app.user.user_id}, '{creation_date}');")
         if action == "delete":
-            app.cursor.execute(f"DELETE FROM accounts WHERE user_id = {app.user.user_id};")
+            app.cursor.execute(f"DELETE FROM accounts WHERE user_id = {app.user.user_id} AND id = {app.user.selected_account_id
+            
+            };")
         app.mydb.commit()
  # TODO add a condition to delete transactions if both id_user (from and to) doesn't exist
 
     def operation(app, operation):
         # TODO add from_user, from_account, to_user, to_account
-        # TEST
+        if app.user.selected_account_id == None:
+            app.info_message.text = ["Select an account!"]
+            return 
+        
         amount = app.main_operation_textboxes["amount"].text
         description = app.main_operation_textboxes["description"].text
         category = app.main_operation_textboxes["category"].text

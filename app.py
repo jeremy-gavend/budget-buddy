@@ -1,7 +1,7 @@
 import mysql.connector, pygame
 from Class_Sessions import Sessions
 from Class_Operations import Operations
-from Class_Buttons import Buttons, Textbox, Messages
+from Class_Buttons import Buttons, Textbox, Messages, Line_obj
 from hashlib import sha256
 import re
 
@@ -35,6 +35,7 @@ class App():
         self.app_state = "login"
         # app_substate = "a"
         self.pepper = 'a' # stocked here, doesn't change
+        self.sort_asc = False
         
         # TODO can select a area that select the account, updating the display above (showing balance), highligting the row and show trnsactions
         # TODO (active account affects all requests (withdraw, sorts, etc))
@@ -96,41 +97,41 @@ class App():
         # TODO must be textbox and write the filter value directly
         # TODO if one label of date is empty, search for 1 date only
         # TODO place them below related sort buttons
-        self.main_filter_transactions_buttons = {
-            "dates": Textbox((100, 200), (100, 25), self.sort_font, tab_to="dates2"),
-            "dates2": Textbox((150, 200), (100, 25), self.sort_font, tab_to="dates"),
-            "from": Textbox((200, 200), (100, 25), self.sort_font, tab_to="to"),
-            "to": Textbox((300, 200), (100, 25), self.sort_font, tab_to="from"),
-            "amount": Textbox((400, 200), (100, 25), self.sort_font),
-            "type": Textbox((500, 200), (100, 25), self.sort_font),
-            "category": Textbox((600, 200), (100, 25), self.sort_font)
+        self.main_filter_transactions_textboxes = {
+            "date": Textbox((50, 400), (50, 25), self.sort_font, tab_to="date2"),
+            "date2": Textbox((150, 400), (50, 25), self.sort_font, tab_to="from"),
+            "from": Textbox((200, 400), (50, 25), self.sort_font, tab_to="to"),
+            "to": Textbox((300, 400), (50, 25), self.sort_font, tab_to="amount"),
+            "amount": Textbox((400, 400), (50, 25), self.sort_font, tab_to="type"),
+            "type": Textbox((500, 400), (50, 25), self.sort_font, tab_to="category"),
+            "category": Textbox((600, 400), (50, 25), self.sort_font, tab_to="date")
         }
 
         # Account buttons
         self.main_account_buttons = {
-            "create": Buttons((600, 50), (100,25), "CREATE ACCOUNT", self.main_font),
-            "delete": Buttons((800, 50), (100,25), "DELETE ACCOUNT", self.main_font)
+            "create": Buttons((600, 50), (250,25), "CREATE ACCOUNT", self.main_font),
+            "delete": Buttons((900, 50), (250,25), "DELETE ACCOUNT", self.main_font)
         }
 
         # Operations buttons
         self.main_operation_buttons = {
             "deposit": Buttons((600, 100), (100, 25), "DEPOSIT", self.main_font),
-            "withdraw": Buttons((700, 100), (100, 25), "WITHDRAW", self.main_font),
-            "transfert": Buttons((800, 100), (100, 25), "TRANSFERT", self.main_font)
+            "withdraw": Buttons((750, 100), (100, 25), "WITHDRAW", self.main_font),
+            "transfert": Buttons((900, 100), (100, 25), "TRANSFERT", self.main_font)
         }
 
         # Text fields for operations
         self.main_operation_textboxes = {
-            "to_user":  Textbox((150, 200), (100, 25), self.sort_font, tab_to="to_account"),
-            "to_account": Textbox((150, 200), (100, 25), self.sort_font, tab_to="amount"),
-            "amount": Textbox((150, 200), (100, 25), self.sort_font, tab_to="category"),
-            "category": Textbox((150, 200), (100, 25), self.sort_font, tab_to="description"),
-            "description": Textbox((150, 200), (100, 25), self.sort_font, tab_to="to_user")
+            "to_user":  Textbox((600, 200), (100, 25), self.sort_font, tab_to="to_account"),
+            "to_account": Textbox((800, 200), (100, 25), self.sort_font, tab_to="amount"),
+            "amount": Textbox((600, 300), (100, 25), self.sort_font, tab_to="category"),
+            "category": Textbox((800, 300), (100, 25), self.sort_font, tab_to="description"),
+            "description": Textbox((600, 400), (300, 25), self.sort_font, tab_to="to_user")
         }
 
         # Quit button
         self.main_buttons = {
-            "logout": Buttons((self.screen_size[0] / 3, 800), (100, 25), "LOG OUT", self.main_font, link_to="login")
+            "logout": Buttons((1000, 850), (100, 25), "LOG OUT", self.main_font, link_to="login")
         }
 
         # TODO
@@ -206,8 +207,8 @@ class App():
 
         #[BOTTOM-LEFT]
         for table, rows in self.tables.items():
-            rows.text = self.convert_table_to_row(table, rows.text, self.user)
-            rows.draw(self)
+            rows_id = self.convert_table_to_row(table, rows, self.user)
+            rows.draw(self, rows_id)
 
         
         # TODO Accounts lists (selectable)
@@ -224,7 +225,7 @@ class App():
         for button in self.main_sort_transactions_buttons.values():
             button.draw(self)
         # TODO Transaction list display
-        for index, button in self.main_filter_transactions_buttons.items():
+        for index, button in self.main_filter_transactions_textboxes.items():
             button.draw(self, index)
         
         
@@ -311,25 +312,37 @@ class App():
     def convert_table_to_row(self, table, value, user):
         # TODO make it so the username appear in place of user_id (from and to)
         # TODO condition to select the "to user" and display it
-        value = []
+        value.text = []
+        rows_id = [None]
 
         self.cursor.execute(f"SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{table}' AND table_schema = 'budget_buddy'")
         first_column = self.cursor.fetchall()
-        value.append(self.add_rows(first_column))
+        columns = []
+        for column in first_column:
+            columns.append(column[0]) 
+        value.text.append(self.add_rows(columns))
         
         self.cursor.execute(f"SELECT * FROM {table} WHERE user_id = {user.user_id}")
         rows = self.cursor.fetchall()
-        value.append(self.add_rows(rows))
+        for row in rows:
+            data = self.add_rows(row) # = (63, 63, 63)
+            if data: 
+                value.text.append(data)
+                rows_id.append(row[0])
 
-        return value
+        return rows_id
 
     def add_rows(self, table):
+        """Convert datas to string to make a row"""
         data_str = ''
         spaces = ''
+
         for row in table:
-            for i in range(20-len(str(row[0]))):
+            # This is for adding spaces depending of the lenght of a word
+            # TODO Maybe add tabulations instead
+            for i in range(10-len(str(row))):
                 spaces += " "
-            data_str += f"{row[0]}{spaces}"
+            data_str += f"{row}{spaces}"
         return data_str
 
     def events(self, app_state):
@@ -339,7 +352,8 @@ class App():
             
             if self.app_state == "main":
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.select_textbox(self.login_textboxes, event)
+                    self.select_textbox(self.main_filter_transactions_textboxes.values(), event)
+                    self.select_textbox(self.main_operation_textboxes.values(), event)
                     for value in self.tables.values():
                         self.select_textbox(value.line_objs, event)
                     for index, button in self.main_buttons.items():
@@ -347,7 +361,8 @@ class App():
                             self.app_state = button.link_to
                     for index, button in self.main_sort_transactions_buttons.items():
                         if button.rect.collidepoint(event.pos):
-                            self.tables["transactions"].text = self.user.sort_by(self.cursor, "transactions", index, True)
+                            self.sort_asc = not self.sort_asc
+                            self.tables["transactions"].text = self.user.sort_by(self, "transactions", index, self.sort_asc)
                     for index, button in self.main_account_buttons.items():
                         if button.rect.collidepoint(event.pos):
                             Operations.manage_account(self, index)  
@@ -357,13 +372,16 @@ class App():
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
-                        pass
+                        for index, textbox in self.main_filter_transactions_textboxes.items():
+                            if textbox.active:
+                                self.user.filter_by(textbox, index)
                     else:
-                        self.add_text(self.main_filter_transactions_buttons, event)
+                        self.add_text(self.main_filter_transactions_textboxes, event)
+                        self.add_text(self.main_operation_textboxes, event)
 
             if app_state == "login":
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.select_textbox(self.login_textboxes, event)                    
+                    self.select_textbox(self.login_textboxes.values(), event)                    
                     for index, button in self.login_buttons.items():
                         if button.rect.collidepoint(event.pos):
                             if index == "login": 
@@ -398,7 +416,7 @@ class App():
                         
             if app_state == "register":
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.select_textbox(self.register_textboxes, event)
+                    self.select_textbox(self.register_textboxes.values(), event)
                     for index, button in self.register_buttons.items():
                         if button.rect.collidepoint(event.pos):
                             if index == "submit": 
@@ -414,10 +432,12 @@ class App():
                     else:
                         self.add_text(self.register_textboxes, event)
 
-    def select_textbox(self, dict, event):
-        for textbox in dict.values():
+    def select_textbox(self, value, event):
+        for textbox in value:
             if textbox.rect.collidepoint(event.pos):
-                textbox.active = True 
+                textbox.active = True
+                if isinstance(textbox, Line_obj):
+                    self.user.selected_account_id = textbox.line_id
             else:
                 textbox.active = False
 

@@ -20,18 +20,18 @@ class Sessions:
         else:
             return ''
         
-    def sort_by(self, cursor, table, sorting: str, ascending: bool):
+    def sort_by(self, app, table, sorting: str, ascending: bool):
         if ascending:
             order = "ASC"
         else:
             order = "DESC"
-        cursor.execute(f"SELECT * FROM {table} WHERE user_id = {self.user_id} ORDER BY '{sorting}' {order};")
-        return cursor.fetchall()
+        app.cursor.execute(f"SELECT * FROM {table} WHERE user_id = {self.user_id} ORDER BY '{sorting}' {order};")
+        return app.cursor.fetchall()
     
-    def sort_dates(self, cursor, start: datetime, end: datetime = ''):
-        if end:
-            cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.user_id} AND date BETWEEN {start} AND {end};")
+    def sort_dates(self, app, sorting, text):
+        if sorting == "date2":
+            app.cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.user_id} AND date BETWEEN {self.main_filter_transactions_textboxes["date"].text} AND {text};")
         else:
-            cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.user_id} AND date = {start};")
+            app.cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.user_id} AND {sorting} = {text};")
         
-        return cursor.fetchall()
+        return app.cursor.fetchall()

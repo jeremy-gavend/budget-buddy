@@ -78,7 +78,7 @@ class Messages:
         self.previous_text = ''
         
 
-    def draw(self, app):
+    def draw(self, app, row_id = []):
         line_offset = 0
         # Make message disappear after set frames
         if not self.text or self.text != self.previous_text:
@@ -89,15 +89,23 @@ class Messages:
 
         if self.timeout > 0:
             self.line_objs = [] 
+            i = 0
+            line_id = []
             for line in self.text:
-                self.line_objs.append(Line_obj((self.coords[0], self.coords[1]+line_offset), (self.size[0], self.size[1]), line,self.font, self.color, self.activable))
+                if row_id:
+                    print(row_id, self.text)
+                    print(row_id[i])
+                    line_id = row_id[i]
+                self.line_objs.append(Line_obj((self.coords[0], self.coords[1]+line_offset), (self.size[0], self.size[1]), line,self.font, self.color, self.activable, line_id))
                 self.line_objs[-1].draw(app)
                 line_offset += 20
+                i += 1
+                
             if self.set_timeout:
                 self.timeout -= 1
 
 class Line_obj:
-    def __init__(self, coords, size, text, font, color, activable):
+    def __init__(self, coords, size, text, font, color, activable, line_id = None):
         self.text = text
 
         self.active = False
@@ -110,6 +118,8 @@ class Line_obj:
         self.COLOR_INACTIVE = color
 
         self.rect = pygame.Rect(coords[0], coords[1], size[0], size[1])
+
+        self.line_id = line_id
 
     def draw(self, app):
         if self.active and self.activable:
