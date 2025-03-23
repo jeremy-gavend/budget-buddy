@@ -62,13 +62,17 @@ class Textbox:
             self.text_spoof += "*"
 
 class Messages:
-    def __init__(self, coords, size, text = [], color = "black", set_timeout = False):
+    def __init__(self, coords, size, font, text = [], color = "black", set_timeout = False, activable = False):
         self.coords = coords
         self.size = size
 
         self.text = text
+        self.font = font
         self.color = color
 
+        self.active = False
+        self.activable = activable
+        
         self.set_timeout = set_timeout
         self.timeout = 0
         self.previous_text = ''
@@ -83,11 +87,35 @@ class Messages:
         if self.timeout == 0:
             self.text = ''
 
-        if self.timeout > 0:    
+        if self.timeout > 0:
+            self.line_objs = [] 
             for line in self.text:
-                rect = pygame.Rect(self.coords[0], self.coords[1]+line_offset, self.size[0], self.size[1])
-                text_render = app.main_font.render(line, True, self.color)
-                app.screen.blit(text_render, rect)
+                self.line_objs.append(Line_obj((self.coords[0], self.coords[1]+line_offset), (self.size[0], self.size[1]), line,self.font, self.color, self.activable))
+                self.line_objs[-1].draw(app)
                 line_offset += 20
             if self.set_timeout:
                 self.timeout -= 1
+
+class Line_obj:
+    def __init__(self, coords, size, text, font, color, activable):
+        self.text = text
+
+        self.active = False
+        self.activable = activable
+
+        self.font = font
+        self.color = color
+
+        self.COLOR_ACTIVE= 'lightblue'
+        self.COLOR_INACTIVE = color
+
+        self.rect = pygame.Rect(coords[0], coords[1], size[0], size[1])
+
+    def draw(self, app):
+        if self.active and self.activable:
+            self.color = self.COLOR_ACTIVE
+        else:
+            self.color = self.COLOR_INACTIVE
+
+        text_render = self.font.render(self.text, True, self.color)
+        app.screen.blit(text_render, self.rect)

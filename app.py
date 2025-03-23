@@ -27,6 +27,7 @@ class App():
         self.screen = pygame.display.set_mode(self.screen_size)
         self.main_font = pygame.font.Font(None, 36)
         self.sort_font = pygame.font.Font(None, 18)
+        self.middle_font = pygame.font.Font(None, 27)
         pygame.display.set_caption("Budget Buddy")
 
         # Variables outside of loop
@@ -39,14 +40,14 @@ class App():
         # TODO (active account affects all requests (withdraw, sorts, etc))
         # TODO display the related transaction for a selected account
         ## Display: Text displays
-        self.info_message = Messages((200, 800), (140, 32), color="orange", set_timeout=True)
+        self.info_message = Messages((200, 800), (140, 32), self.main_font, color="orange", set_timeout=True)
         self.account_messages = {
-            "username": Messages((50,50), (100, 32)),
-            "balance": Messages((50,100), (100, 32))
+            "username": Messages((50,50), (100, 32), self.main_font),
+            "balance": Messages((50,100), (100, 32), self.main_font)
         }
         self.tables = {
-            "transactions": Messages((1000, 500), (400, 600)),
-            "accounts": Messages((500, 500), (400, 600))
+            "transactions": Messages((50, 500), (400, 500), self.middle_font),
+            "accounts": Messages((50, 200), (400, 500), self.middle_font)
         }
 
         # Display: Login page (input fields + buttons) 
@@ -83,12 +84,12 @@ class App():
         # Sort buttons
         # TODO function when clicked another time, it change asc to desc (sort_order = not sort order -> if sort_order then cursor.execute= [...] {sorting} sorting = "ASC;" else "DESC")
         self.main_sort_transactions_buttons = {
-            "from": Buttons((100, 100), (100, 25), "FROM", self.sort_font),
-            "to": Buttons((200, 100), (100, 25), "TO", self.sort_font),
-            "amount": Buttons((300, 100), (100, 25), "AMOUNT", self.sort_font),
-            "date": Buttons((400, 100), (100, 25), "DATE", self.sort_font),
-            "type": Buttons((500, 100), (100, 25), "TYPE", self.sort_font),
-            "category": Buttons((600, 100), (100, 25), "CATEGORY", self.sort_font)
+            "from": Buttons((50, 450), (100, 25), "FROM", self.sort_font),
+            "to": Buttons((100, 450), (100, 25), "TO", self.sort_font),
+            "amount": Buttons((150, 450), (100, 25), "AMOUNT", self.sort_font),
+            "date": Buttons((200, 450), (100, 25), "DATE", self.sort_font),
+            "type": Buttons((250, 450), (100, 25), "TYPE", self.sort_font),
+            "category": Buttons((300, 450), (100, 25), "CATEGORY", self.sort_font)
         }
 
         # Filter buttons
@@ -107,15 +108,15 @@ class App():
 
         # Account buttons
         self.main_account_buttons = {
-            "create": Buttons((50, 400), (100,25), "CREATE ACCOUNT", self.main_font),
-            "delete": Buttons((250, 400), (100,25), "DELETE ACCOUNT", self.main_font)
+            "create": Buttons((600, 50), (100,25), "CREATE ACCOUNT", self.main_font),
+            "delete": Buttons((800, 50), (100,25), "DELETE ACCOUNT", self.main_font)
         }
 
         # Operations buttons
         self.main_operation_buttons = {
-            "deposit": Buttons((900, 100), (100, 25), "DEPOSIT", self.main_font),
-            "withdraw": Buttons((1000, 100), (100, 25), "WITHDRAW", self.main_font),
-            "transfert": Buttons((1100, 100), (100, 25), "TRANSFERT", self.main_font)
+            "deposit": Buttons((600, 100), (100, 25), "DEPOSIT", self.main_font),
+            "withdraw": Buttons((700, 100), (100, 25), "WITHDRAW", self.main_font),
+            "transfert": Buttons((800, 100), (100, 25), "TRANSFERT", self.main_font)
         }
 
         # Text fields for operations
@@ -129,7 +130,7 @@ class App():
 
         # Quit button
         self.main_buttons = {
-            "logout": Buttons((100, 700), (100, 25), "LOG OUT", self.main_font, link_to="login")
+            "logout": Buttons((self.screen_size[0] / 3, 800), (100, 25), "LOG OUT", self.main_font, link_to="login")
         }
 
         # TODO
@@ -191,22 +192,21 @@ class App():
     def main(self):
 
         # !
-        # TODO create lines around each lines
+        # TODO display: create lines around each lines
 
-        # TODO account display (+ username)
         # [TOP-LEFT]
-        self.account_messages["balance"].text = [str(self.user.get_balance(self.cursor))]
+        self.account_messages["balance"].text = [f"Your balance is €{self.user.get_balance(self.cursor)}"]
         for message in self.account_messages.values():
             message.draw(self)
 
         for index, button in self.main_account_buttons.items():
             button.draw(self)
 
-        # TODO Either display all accounts and transfert by id to id, or select an account and display it, then transfert from it
+        # TODO Display all accounts, select an account and display it, then transfert from it
 
         #[BOTTOM-LEFT]
         for table, rows in self.tables.items():
-            self.convert_table_to_row(table, rows.text, self.user)
+            rows.text = self.convert_table_to_row(table, rows.text, self.user)
             rows.draw(self)
 
         
@@ -224,6 +224,9 @@ class App():
         for button in self.main_sort_transactions_buttons.values():
             button.draw(self)
         # TODO Transaction list display
+        for index, button in self.main_filter_transactions_buttons.items():
+            button.draw(self, index)
+        
         
         ## Messages
         self.info_message.draw(self)
@@ -310,37 +313,57 @@ class App():
         # TODO condition to select the "to user" and display it
         value = []
 
-        self.cursor.execute(f"SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{table}'")
+        self.cursor.execute(f"SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{table}' AND table_schema = 'budget_buddy'")
         first_column = self.cursor.fetchall()
-
-        for row in first_column:
-            data_str = ''
-            for data in row:
-                data_str += f"{data} |"
-            value.append(f"{data_str}")
+        value.append(self.add_rows(first_column))
         
         self.cursor.execute(f"SELECT * FROM {table} WHERE user_id = {user.user_id}")
         rows = self.cursor.fetchall()
+        value.append(self.add_rows(rows))
 
-        for row in rows:
-            data_str = ''
-            for data in row:
-                data_str += f"{data} |"
-            value.append(f"{data_str}")
+        return value
+
+    def add_rows(self, table):
+        data_str = ''
+        spaces = ''
+        for row in table:
+            for i in range(20-len(str(row[0]))):
+                spaces += " "
+            data_str += f"{row[0]}{spaces}"
+        return data_str
 
     def events(self, app_state):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             
+            if self.app_state == "main":
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.select_textbox(self.login_textboxes, event)
+                    for value in self.tables.values():
+                        self.select_textbox(value.line_objs, event)
+                    for index, button in self.main_buttons.items():
+                        if button.rect.collidepoint(event.pos):
+                            self.app_state = button.link_to
+                    for index, button in self.main_sort_transactions_buttons.items():
+                        if button.rect.collidepoint(event.pos):
+                            self.tables["transactions"].text = self.user.sort_by(self.cursor, "transactions", index, True)
+                    for index, button in self.main_account_buttons.items():
+                        if button.rect.collidepoint(event.pos):
+                            Operations.manage_account(self, index)  
+                    for index, button in self.main_operation_buttons.items():
+                        if button.rect.collidepoint(event.pos):
+                            Operations.operation(self, index)
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        pass
+                    else:
+                        self.add_text(self.main_filter_transactions_buttons, event)
+
             if app_state == "login":
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    for textbox in self.login_textboxes.values():
-                        if textbox.rect.collidepoint(event.pos):
-                            textbox.active = True 
-                        else:
-                            textbox.active = False
-                    
+                    self.select_textbox(self.login_textboxes, event)                    
                     for index, button in self.login_buttons.items():
                         if button.rect.collidepoint(event.pos):
                             if index == "login": 
@@ -371,32 +394,11 @@ class App():
                         else:
                             self.login_failed()
                     else:
-                        for index, textbox in self.login_textboxes.items():
-                            if textbox.active:
-                                if event.key == pygame.K_BACKSPACE:
-                                    textbox.text = textbox.text[:-1]
-                                    if index == "password" or index == "confirm_password":
-                                        textbox.text_spoof = textbox.text_spoof[:-1]
-                                    break
-                                elif event.key == pygame.K_TAB:
-                                    textbox.active = False
-                                    self.login_textboxes[textbox.tab_to].active = True
-                                    break
-                                else:
-                                    previous_lenght = len(textbox.text) # Prevent to add stars when no characters is added
-                                    textbox.text += event.unicode
-                                    if index == "password" or index == "confirm_password":
-                                        textbox.spoof_text(previous_lenght)
-                                    break
-
+                        self.add_text(self.login_textboxes, event)
+                        
             if app_state == "register":
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    for textbox in self.register_textboxes.values():
-                        if textbox.rect.collidepoint(event.pos):
-                            textbox.active = True 
-                        else:
-                            textbox.active = False
-
+                    self.select_textbox(self.register_textboxes, event)
                     for index, button in self.register_buttons.items():
                         if button.rect.collidepoint(event.pos):
                             if index == "submit": 
@@ -410,38 +412,36 @@ class App():
                         if self.create_account():
                             self.app_state = "login"
                     else:
-                        for index, textbox in self.register_textboxes.items():
-                            if textbox.active:
-                                if event.key == pygame.K_BACKSPACE:
-                                    textbox.text = textbox.text[:-1]
-                                    if index == "password" or index == "confirm_password":
-                                        textbox.text_spoof = textbox.text_spoof[:-1]
-                                    break
-                                elif event.key == pygame.K_TAB:
-                                    textbox.active = False
-                                    self.register_textboxes[textbox.tab_to].active = True
-                                    break
-                                else:
-                                    previous_lenght = len(textbox.text)
-                                    textbox.text += event.unicode
-                                    if index == "password" or index == "confirm_password":
-                                        textbox.spoof_text(previous_lenght)
-                                    break
+                        self.add_text(self.register_textboxes, event)
 
-            if self.app_state == "main":
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    for index, button in self.main_buttons.items():
-                        if button.rect.collidepoint(event.pos):
-                            self.app_state = button.link_to
-                    for index, button in self.main_sort_transactions_buttons.items():
-                        if button.rect.collidepoint(event.pos):
-                            self.tables["transactions"].text = self.user.sort_by(self.cursor, "transactions", index, True)
-                    for index, button in self.main_account_buttons.items():
-                        if button.rect.collidepoint(event.pos):
-                            Operations.manage_account(self, index)  
-                    for index, button in self.main_operation_buttons.items():
-                        if button.rect.collidepoint(event.pos):
-                            Operations.operation(self, index)           
+    def select_textbox(self, dict, event):
+        for textbox in dict.values():
+            if textbox.rect.collidepoint(event.pos):
+                textbox.active = True 
+            else:
+                textbox.active = False
+
+    def add_text(self, dict, event):
+        for index, textbox in dict.items():
+            if textbox.active:
+                if event.key == pygame.K_BACKSPACE:
+                    textbox.text = textbox.text[:-1]
+                    if index == "password" or index == "confirm_password":
+                        textbox.text_spoof = textbox.text_spoof[:-1]
+                    break
+                elif event.key == pygame.K_TAB:
+                    textbox.active = False
+                    dict[textbox.tab_to].active = True
+                    break
+                else:
+                    previous_lenght = len(textbox.text)
+                    textbox.text += event.unicode
+                    if index == "password" or index == "confirm_password":
+                        textbox.spoof_text(previous_lenght)
+                    break
+
+
+
 
 
 # --- Test ---
