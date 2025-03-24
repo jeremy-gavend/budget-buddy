@@ -6,44 +6,49 @@ class Operations:
         creation_date = datetime.today()
         if action == "create":
             app.cursor.execute(f"INSERT INTO accounts (balance, user_id, creation_date) VALUES (0, {app.user.user_id}, '{creation_date}');")
+            app.info_message.text = ["Account successfully created!"]
+
         if action == "delete":
-            app.cursor.execute(f"DELETE FROM accounts WHERE user_id = {app.user.user_id} AND id = {app.user.selected_account_id
-            
-            };")
+            app.cursor.execute(f"DELETE FROM accounts WHERE user_id = {app.user.user_id} AND id = {app.user.selected_account_id};")
+            app.info_message.text = ["Account successfully deleted!"]
         app.mydb.commit()
  # TODO add a condition to delete transactions if both id_user (from and to) doesn't exist
-
+# TODO check if there's enough in the account or how much it can goes down
     def operation(app, operation):
-        # TODO add from_user, from_account, to_user, to_account
-        if app.user.selected_account_id == None:
-            app.info_message.text = ["Select an account!"]
-            return 
-        
-        amount = app.main_operation_textboxes["amount"].text
+        # TODO add from_user, from_account, to_user, to_account    
+        amount = float(app.main_operation_textboxes["amount"].text)
         description = app.main_operation_textboxes["description"].text
         category = app.main_operation_textboxes["category"].text
         to_user = app.main_operation_textboxes["to_user"].text
         to_account = app.main_operation_textboxes["to_account"].text
-        #-----
+
+        if not to_user:
+            to_user = 0
+        if not to_account:
+            to_account = 0
+        
         try:
-            balance = app.user.get_balance(app.cursor)
-            current_date = datetime.today()
-            if operation == "withdraw":
-                #TODO add verif to check if balance is enough
-                app.cursor.execute(f"UPDATE accounts SET balance = {balance - amount} WHERE user_id = {app.user.user_id};")
-                app.info_message.text = [f"{app.user.username}, you successfully withdrew {amount} from your account at {current_date}."]
-            elif operation == "deposit":
-                app.cursor.execute(f"UPDATE accounts SET balance = {balance + amount} WHERE user_id = {app.user.user_id};")
-                app.info_message.text = [f"{app.user.username}, you successfully deposited {amount} into your account at {current_date}."]
-            elif operation == "transfert":
-                pass
-                # TODO account selected or from, destination account
+            balance = float(app.user.get_balance(app.cursor))
+        except Exception:
+            app.info_message.text = ["Select an account!"]
+            return 
+        current_date = datetime.today()
+        if operation == "withdraw":
+            #TODO add verif to check if balance is enough
+            app.cursor.execute(f"UPDATE accounts SET balance = {balance - amount} WHERE user_id = {app.user.user_id} AND id = {app.user.selected_account_id};")
+            app.info_message.text = [f"{app.user.username}, you successfully withdrew {amount} from your account at {current_date}."]
+        elif operation == "deposit":
+            app.cursor.execute(f"UPDATE accounts SET balance = {balance + amount} WHERE user_id = {app.user.user_id} AND id = {app.user.selected_account_id};")
+            app.info_message.text = [f"{app.user.username}, you successfully deposited {amount} into your account at {current_date}."]
+        elif operation == "transfert":
+            pass
+            # TODO account selected or from, destination account
                 # TODO update both accounts using previous functions
                 # app.cursor.execute(f"UPDATE accounts SET balance = {balance - amount} WHERE user_id = {app.user.user_id};")
                 # string = f"{app.user.username}, you successfully withdrew {amount} from your account at {current_date}."
-        except Exception:
-            app.info_message.text = ["You need an account first!"]
-            return 
+        # except Exception:
+        #     app.info_message.text = ["You need an account first!"]
+        #     return 
         app.mydb.commit()
         
         # Write to transaction table

@@ -48,7 +48,7 @@ class App():
         }
         self.tables = {
             "transactions": Messages((50, 500), (400, 500), self.middle_font),
-            "accounts": Messages((50, 200), (400, 500), self.middle_font)
+            "accounts": Messages((50, 200), (400, 200), self.middle_font)
         }
 
         # Display: Login page (input fields + buttons) 
@@ -98,13 +98,13 @@ class App():
         # TODO if one label of date is empty, search for 1 date only
         # TODO place them below related sort buttons
         self.main_filter_transactions_textboxes = {
-            "date": Textbox((50, 400), (50, 25), self.sort_font, tab_to="date2"),
-            "date2": Textbox((150, 400), (50, 25), self.sort_font, tab_to="from"),
-            "from": Textbox((200, 400), (50, 25), self.sort_font, tab_to="to"),
-            "to": Textbox((300, 400), (50, 25), self.sort_font, tab_to="amount"),
-            "amount": Textbox((400, 400), (50, 25), self.sort_font, tab_to="type"),
-            "type": Textbox((500, 400), (50, 25), self.sort_font, tab_to="category"),
-            "category": Textbox((600, 400), (50, 25), self.sort_font, tab_to="date")
+            "date": Textbox((50, 400), (50, 25), self.middle_font, tab_to="date2"),
+            "date2": Textbox((150, 400), (50, 25), self.middle_font, tab_to="from"),
+            "from": Textbox((200, 400), (50, 25), self.middle_font, tab_to="to"),
+            "to": Textbox((300, 400), (50, 25), self.middle_font, tab_to="amount"),
+            "amount": Textbox((400, 400), (50, 25), self.middle_font, tab_to="type"),
+            "type": Textbox((500, 400), (50, 25), self.middle_font, tab_to="category"),
+            "category": Textbox((600, 400), (50, 25), self.middle_font, tab_to="date")
         }
 
         # Account buttons
@@ -122,11 +122,11 @@ class App():
 
         # Text fields for operations
         self.main_operation_textboxes = {
-            "to_user":  Textbox((600, 200), (100, 25), self.sort_font, tab_to="to_account"),
-            "to_account": Textbox((800, 200), (100, 25), self.sort_font, tab_to="amount"),
-            "amount": Textbox((600, 300), (100, 25), self.sort_font, tab_to="category"),
-            "category": Textbox((800, 300), (100, 25), self.sort_font, tab_to="description"),
-            "description": Textbox((600, 400), (300, 25), self.sort_font, tab_to="to_user")
+            "to_user":  Textbox((700, 200), (100, 25), self.middle_font, label="TO", label_font=self.middle_font, tab_to="to_account"),
+            "to_account": Textbox((900, 200), (100, 25), self.middle_font, label="ACCOUNT", label_font=self.middle_font, tab_to="amount"),
+            "amount": Textbox((700, 300), (100, 25), self.middle_font, label="AMOUNT", label_font=self.middle_font, tab_to="category"),
+            "category": Textbox((900, 300), (100, 25), self.middle_font, label="CATEGORY", label_font=self.middle_font, tab_to="description"),
+            "description": Textbox((700, 400), (300, 25), self.middle_font, label="DESCRIPTION", label_font=self.middle_font, tab_to="to_user")
         }
 
         # Quit button
@@ -169,8 +169,8 @@ class App():
 
     def login(self):
         # Text field
-        for index, button in self.login_textboxes.items():
-            button.draw(self, index)
+        for index, textbox in self.login_textboxes.items():
+            textbox.draw(self, index)
 
         ## Info message
         self.info_message.draw(self)
@@ -191,43 +191,34 @@ class App():
             button.draw(self)
 
     def main(self):
-
-        # !
         # TODO display: create lines around each lines
-
-        # [TOP-LEFT]
+        # TODO Display all accounts, select an account and display it, then transfert from it
+        # TODO self.active, need to change color when active
+       
+        # Selected account summary
         self.account_messages["balance"].text = [f"Your balance is €{self.user.get_balance(self.cursor)}"]
         for message in self.account_messages.values():
             message.draw(self)
 
-        for index, button in self.main_account_buttons.items():
-            button.draw(self)
-
-        # TODO Display all accounts, select an account and display it, then transfert from it
-
-        #[BOTTOM-LEFT]
+        # Draw tables
         for table, rows in self.tables.items():
             rows_id = self.convert_table_to_row(table, rows, self.user)
             rows.draw(self, rows_id)
 
-        
-        # TODO Accounts lists (selectable)
+        # Account and operation buttons and textboxes
+        for index, button in self.main_account_buttons.items():
+            button.draw(self)
 
-
-        # TODO self.active, need to change color when active
-      
-        #[TOP-RIGHT]
-        # TODO Transaction actions (sub_state)
+        for index, textbox in self.main_operation_textboxes.items():
+            textbox.draw(self, index)
         for button in self.main_operation_buttons.values():
             button.draw(self)
-        #[BOTTOM-RIGHT]
-        # Sort buttons
+
+        # Sort buttons for transactions
         for button in self.main_sort_transactions_buttons.values():
             button.draw(self)
-        # TODO Transaction list display
-        for index, button in self.main_filter_transactions_textboxes.items():
-            button.draw(self, index)
-        
+        for index, textbox in self.main_filter_transactions_textboxes.items():
+            textbox.draw(self, index)
         
         ## Messages
         self.info_message.draw(self)
@@ -459,46 +450,3 @@ class App():
                     if index == "password" or index == "confirm_password":
                         textbox.spoof_text(previous_lenght)
                     break
-
-
-
-
-
-# --- Test ---
-# --- ---- ---
-
-#for creating an account (user can have several)
-#this goes in a "create an bank account" button
-                # try:
-                #     self.user.account_creation(cursor, mydb)
-                # except Exception:
-                #     self.message_text = "Error in account creation"
-
-
-# ---Tests---
-# print in textbox
-# balance = user.get_balance(cursor)
-
-#button deposit that display deposit interface
-# message_dep = Operations.deposit(cursor, mydb, user, 100, "Test_deposit", "None")
-# print(message_dep)
-
-#button withdraw that display withdraw interface
-# message_withd = Operations.withdraw(cursor, mydb, user, 50, "Test_withdraw", "None")
-# print(message_withd)
-
-
-#button history that display history interface
-# historic = Operations.history(cursor, user)
-# print(historic)
-
-# lots of button that call this but with different labels
-# sorted = user.sort_by(cursor, "date", True)
-# print(sorted)
-
-# for specific dates button
-# sorted_dates = user.sort_dates(cursor, "2021-01-01", "2021-12-31")
-# print(sorted_dates)
-
-# sorted_dates = user.sort_dates(cursor, "2021-01-01")
-# print(sorted_dates)

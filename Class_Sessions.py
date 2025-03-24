@@ -13,7 +13,7 @@ class Sessions:
         return user
     
     def get_balance(self, cursor):
-        cursor.execute(f"SELECT balance FROM accounts WHERE user_id = {self.user_id};")
+        cursor.execute(f"SELECT balance FROM accounts WHERE user_id = {self.user_id} AND id = {self.selected_account_id};")
         data = cursor.fetchall()
         if data:
             return data[0][0]

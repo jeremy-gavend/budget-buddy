@@ -93,8 +93,6 @@ class Messages:
             line_id = []
             for line in self.text:
                 if row_id:
-                    print(row_id, self.text)
-                    print(row_id[i])
                     line_id = row_id[i]
                 self.line_objs.append(Line_obj((self.coords[0], self.coords[1]+line_offset), (self.size[0], self.size[1]), line,self.font, self.color, self.activable, line_id))
                 self.line_objs[-1].draw(app)

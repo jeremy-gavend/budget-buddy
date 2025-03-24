@@ -26,7 +26,10 @@ CREATE TABLE accounts (
 -- TODO add "to_user_id", "from_account", "to_account" 
 CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
-    user_id BIGINT UNSIGNED,
+    user_id BIGINT UNSIGNED NOT NULL,
+    account BIGINT UNSIGNED NOT NULL,
+    to_user_id BIGINT UNSIGNED,
+    to_account BIGINT UNSIGNED,
     amount DECIMAL(10, 2) NOT NULL,
     description VARCHAR(255) NOT NULL,
     date DATE NOT NULL,
