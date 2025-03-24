@@ -1,4 +1,4 @@
-import mysql.connector, pygame
+import mysql.connector, pygame, random, string
 from Class_Sessions import Sessions
 from Class_Operations import Operations
 from Class_Buttons import Buttons, Textbox, Messages, Line_obj
@@ -98,13 +98,13 @@ class App():
         # TODO if one label of date is empty, search for 1 date only
         # TODO place them below related sort buttons
         self.main_filter_transactions_textboxes = {
-            "date": Textbox((50, 400), (50, 25), self.middle_font, tab_to="date2"),
+            "date": Textbox((50, 400), (50, 25), self.middle_font, label="DATES", label_font=self.middle_font, tab_to="date2"),
             "date2": Textbox((150, 400), (50, 25), self.middle_font, tab_to="from"),
-            "from": Textbox((200, 400), (50, 25), self.middle_font, tab_to="to"),
-            "to": Textbox((300, 400), (50, 25), self.middle_font, tab_to="amount"),
-            "amount": Textbox((400, 400), (50, 25), self.middle_font, tab_to="type"),
-            "type": Textbox((500, 400), (50, 25), self.middle_font, tab_to="category"),
-            "category": Textbox((600, 400), (50, 25), self.middle_font, tab_to="date")
+            "user_id": Textbox((200, 400), (50, 25), self.middle_font, label="FROM", label_font=self.middle_font, tab_to="to"),
+            "to_user_id": Textbox((300, 400), (50, 25), self.middle_font, label="TO", label_font=self.middle_font, tab_to="amount"),
+            "amount": Textbox((400, 400), (50, 25), self.middle_font, label="AMOUNT", label_font=self.middle_font, tab_to="type"),
+            "type": Textbox((500, 400), (50, 25), self.middle_font, label="TYPE", label_font=self.middle_font, tab_to="category"),
+            "category": Textbox((600, 400), (50, 25), self.middle_font, label="CATEGORY", label_font=self.middle_font, tab_to="date")
         }
 
         # Account buttons
@@ -270,7 +270,7 @@ class App():
                     self.info_message.text = ["Username already exists!"]
                     return False
         
-        salt = 'b'
+        salt = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
         username = self.register_textboxes["username"].text
         raw_password = self.pepper + self.register_textboxes["password"].text + salt
         password = sha256(raw_password.encode()).hexdigest()
@@ -326,13 +326,13 @@ class App():
     def add_rows(self, table):
         """Convert datas to string to make a row"""
         data_str = ''
-        spaces = ''
+        spaces = '  '
 
         for row in table:
             # This is for adding spaces depending of the lenght of a word
             # TODO Maybe add tabulations instead
-            for i in range(10-len(str(row))):
-                spaces += " "
+            # for i in range(10-len(str(row))):
+            #     spaces += " "
             data_str += f"{row}{spaces}"
         return data_str
 
@@ -365,7 +365,7 @@ class App():
                     if event.key == pygame.K_RETURN:
                         for index, textbox in self.main_filter_transactions_textboxes.items():
                             if textbox.active:
-                                self.user.filter_by(textbox, index)
+                                self.user.filter_by(self, textbox.text, index)
                     else:
                         self.add_text(self.main_filter_transactions_textboxes, event)
                         self.add_text(self.main_operation_textboxes, event)

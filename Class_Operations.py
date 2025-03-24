@@ -33,15 +33,24 @@ class Operations:
             app.info_message.text = ["Select an account!"]
             return 
         current_date = datetime.today()
-        if operation == "withdraw":
-            #TODO add verif to check if balance is enough
-            app.cursor.execute(f"UPDATE accounts SET balance = {balance - amount} WHERE user_id = {app.user.user_id} AND id = {app.user.selected_account_id};")
-            app.info_message.text = [f"{app.user.username}, you successfully withdrew {amount} from your account at {current_date}."]
-        elif operation == "deposit":
-            app.cursor.execute(f"UPDATE accounts SET balance = {balance + amount} WHERE user_id = {app.user.user_id} AND id = {app.user.selected_account_id};")
-            app.info_message.text = [f"{app.user.username}, you successfully deposited {amount} into your account at {current_date}."]
-        elif operation == "transfert":
-            pass
+        try:
+            if operation == "withdraw":
+                #TODO add verif to check if balance is enough
+                app.cursor.execute(f"UPDATE accounts SET balance = {balance - amount} WHERE user_id = {app.user.user_id} AND id = {app.user.selected_account_id};")
+                app.info_message.text = [f"{app.user.username}, you successfully withdrew {amount} from your account at {current_date}."]
+            elif operation == "deposit":
+                app.cursor.execute(f"UPDATE accounts SET balance = {balance + amount} WHERE user_id = {app.user.user_id} AND id = {app.user.selected_account_id};")
+                app.info_message.text = [f"{app.user.username}, you successfully deposited {amount} into your account at {current_date}."]
+            elif operation == "transfert":
+                app.cursor.execute(f"UPDATE accounts SET balance = {balance - amount} WHERE user_id = {app.user.user_id} AND id = {app.user.selected_account_id};")
+                app.mydb.commit()
+                app.cursor.execute(f"UPDATE accounts SET balance = {balance + amount} WHERE user_id = {to_user} AND account = {to_account};")
+                
+                app.info_message.text = [f"{app.user.username}, you successfully transfered {amount} from",  f"your account into {to_user} account number {to_account} at {current_date}."]
+
+        except Exception:
+            app.info_message.text = ["Select an account!"]
+            return
             # TODO account selected or from, destination account
                 # TODO update both accounts using previous functions
                 # app.cursor.execute(f"UPDATE accounts SET balance = {balance - amount} WHERE user_id = {app.user.user_id};")

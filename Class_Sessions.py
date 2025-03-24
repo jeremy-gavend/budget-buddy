@@ -28,7 +28,7 @@ class Sessions:
         app.cursor.execute(f"SELECT * FROM {table} WHERE user_id = {self.user_id} ORDER BY '{sorting}' {order};")
         return app.cursor.fetchall()
     
-    def sort_dates(self, app, sorting, text):
+    def filter_by(self, app, text, sorting):
         if sorting == "date2":
             app.cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.user_id} AND date BETWEEN {self.main_filter_transactions_textboxes["date"].text} AND {text};")
         else:
